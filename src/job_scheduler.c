@@ -25,7 +25,6 @@ void job_scheduler_loop()
 	do
 	{
 		mysql_result_bucket *somebucket;
-		sql_send_query(&somebucket,TEST,"A","B",53);
 		//get jobs that we need to do!
 		//
 		sleep(1);

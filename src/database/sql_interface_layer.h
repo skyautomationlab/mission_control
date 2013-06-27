@@ -23,6 +23,8 @@
 #include <mysql/mysql.h>
 #endif
 #define GET_CANDIDATE_JOBS "USE AUTOMATION; call get_candidate_jobs();"
+#define SET_MACHINE_STATUS "USE AUTOMATION; update machines set status='%s' where id=%d;" 
+#define SET_JOB_STATUS "USE AUTOMATION; call set_job_status_from_id('%s','%s');";
 typedef struct mysql_result_bucket
 {
 	MYSQL_RES **result_array;
