@@ -22,24 +22,26 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <stdio.h>
-extern jnx_hashmap *config;
 int sql_setup_credentials(void)
 {
+
 	char *host = jnx_hash_get(config,"SQLHOST");	
+	printf("host %s\n",host);
 	char *username = jnx_hash_get(config,"SQLUSER");
 	char *password = jnx_hash_get(config,"SQLPASS");
 	assert(host);
 	assert(username);
 	assert(password);
+	perform_store_sql_credentials(host,username,password);
 	return 0;
 }
 int sql_send_query(mysql_result_bucket **results_bucket, const char *querytemplate, ...)
 {
 	char constructed_query[1024];
 	va_list ap;
-	
 	va_start(ap,querytemplate);
 	vsprintf(constructed_query,querytemplate,ap);
 	va_end(ap);
-	printf("Sending query -> %s\n",constructed_query);
+	printf("Sending query -> %s\n",constructed_query);	
+	return sql_query(constructed_query,results_bucket);
 }

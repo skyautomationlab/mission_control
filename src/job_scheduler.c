@@ -24,17 +24,24 @@ void job_scheduler_loop()
 {
 	do
 	{
-		mysql_result_bucket *somebucket;
-		//get jobs that we need to do!
-		//
+		mysql_result_bucket *somebucket = NULL;
+		if(sql_send_query(&somebucket,GET_CANDIDATE_JOBS) == 0)
+		{
+			int x = 0;
+			for(x = 0; x < somebucket->row_count; ++x)
+			{
+				printf("%s\n",somebucket->rows[x][0]);
+			}
+			remove_mysql_result_bucket(&somebucket);
+		}	
 		sleep(1);
 	}
 	while(1);
 }
-void job_scheduler_start(void)
+void job_scheduler_start()
 {
 	printf("Job scheduler starting\n");
 	if(sql_setup_credentials() == 0){
-	job_scheduler_loop();
+		job_scheduler_loop();
 	}
 }

@@ -5,16 +5,14 @@ char *host;
 char *username;
 char *password;
 
-int jnx_sql_interface_setup(void);
-void jnx_sql_close(void);
-
 void perform_store_sql_credentials(char* host_addr, char* user, char* pass)
 {
 	host = host_addr;
 	username = user;
 	password = pass;
+	printf("Set sql credentials %s %s %s \n",host,username,password);
 }
-int jnx_sql_query(char* query,mysql_result_bucket **result_bucket)
+int sql_query(char* query,mysql_result_bucket **result_bucket)
 {
 	MYSQL *connection = mysql_init(NULL);
 	MYSQL_RES *result;
@@ -36,9 +34,8 @@ int jnx_sql_query(char* query,mysql_result_bucket **result_bucket)
 		result = mysql_store_result(connection);
 		if(result)
 		{
-			(*result_bucket)->result_array[(*result_bucket)->count] = result;
-			(*result_bucket)->count++;
-			mysql_free_result(result);
+			add_mysql_result_bucket_entry(result_bucket,result);
+		//	mysql_free_result(result);
 		}
 		else          /* no result set or error */
 		{

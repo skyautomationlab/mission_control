@@ -17,7 +17,6 @@
  */
 #ifndef __JOB_SCHEDULER_H__
 #define __JOB_SCHEDULER_H__
-
 void job_scheduler_start(void);
 
 #endif

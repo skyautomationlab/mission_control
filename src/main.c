@@ -37,8 +37,6 @@ int parse_conf_file(char *path, jnx_hashmap **config)
 	{
 		jnx_hash_put((*config),head->key,head->value);
 		printf("Inserted %s %s into configuration\n",head->key,head->value);
-		free(head->key);
-		free(head->value);
 		free(head);	
 		head = head->next;
 	}
