@@ -18,8 +18,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 #include "job_scheduler.h"
 #include "database/sql_interface_layer.h"
+#define TIME_WAIT sleep(1);
+typedef enum trigger_status { ALREADYRUN,READYTORUN,NOTREADYTORUN }trigger_status;
+int job_scheduler_check_time(time_t candidate_time)
+{
+	time_t current_time = time(0);
+	if((candidate_time - current_time) < 0)
+	{
+		return ALREADYRUN;
+	}
+	if((candidate_time - current_time) <= 60)
+	{
+		return READYTORUN;
+	}else
+	{
+		return NOTREADYTORUN;
+	}
+}
 void job_scheduler_loop()
 {
 	do
@@ -30,11 +48,23 @@ void job_scheduler_loop()
 			int x;
 			for(x = 0; x < somebucket->row_count; ++x)
 			{
-
+				trigger_status status = job_scheduler_check_time(atoi(somebucket->rows[x][get_mysql_result_bucket_field_position(&somebucket,"trigger_time")]));
+				switch(status)
+				{
+					case ALREADYRUN:
+						printf("Already run\n");
+						break;
+					case READYTORUN:
+						printf("Ready to run\n");
+						break;
+					case NOTREADYTORUN:
+						printf("Not ready to run\n");
+						break;
+				}	
 			}
 			remove_mysql_result_bucket(&somebucket);
 		}	
-		sleep(1);
+		TIME_WAIT
 	}
 	while(1);
 }
