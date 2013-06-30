@@ -47,3 +47,20 @@ void remove_mysql_result_bucket(mysql_result_bucket **bucket)
 	free((*bucket)->rows);
 	free((*bucket));
 }
+int get_mysql_result_bucket_field_position(mysql_result_bucket **result_bucket, char *field_name)
+{
+	if(*result_bucket == NULL || (*result_bucket)->fields == NULL)
+	{
+		return -1;
+	}
+	int x; 
+	for(x = 0; x < (*result_bucket)->field_count; ++x)
+	{
+		char *current_field = (*result_bucket)->fields[x].name;
+		if(strcmp(current_field,field_name) == 0)
+		{
+			return x;
+		}
+	}	
+	return -1;
+}

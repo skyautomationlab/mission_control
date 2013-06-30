@@ -22,6 +22,7 @@
 #else 
 #include <mysql/mysql.h>
 #endif
+#include <jnxc_headers/jnxhash.h>
 typedef struct mysql_result_bucket
 {
 	int field_count;
@@ -31,7 +32,7 @@ typedef struct mysql_result_bucket
 	MYSQL_RES *result;
 }mysql_result_bucket;
 
-
+int get_mysql_result_bucket_field_position(mysql_result_bucket **result_bucket, char *field_name);
 void add_mysql_result_bucket_entry(mysql_result_bucket **result_bucket,MYSQL_RES *result);
 void remove_mysql_result_bucket(mysql_result_bucket **bucket);
 #endif

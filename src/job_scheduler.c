@@ -27,10 +27,10 @@ void job_scheduler_loop()
 		mysql_result_bucket *somebucket = NULL;
 		if(sql_send_query(&somebucket,GET_CANDIDATE_JOBS) == 0)
 		{
-			int x = 0;
+			int x;
 			for(x = 0; x < somebucket->row_count; ++x)
 			{
-				printf("%s\n",somebucket->rows[x][0]);
+
 			}
 			remove_mysql_result_bucket(&somebucket);
 		}	
