@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  tranceiver_control.h
+ *       Filename:  transaction_api.h
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  07/01/13 09:05:18
+ *        Created:  07/01/13 13:54:11
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,9 +15,4 @@
  *
  * =====================================================================================
  */
-#ifndef __TRANSCEIVER_CONTROL_H__
-#define __TRANSCEIVER_CONTROL_H__
-#include <jnxc_headers/jnxnetwork.h>
-int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char *job_id, char *job_command);
-void *transceiver_control_listener_scheduler();
-#endif
+#define API_COMMAND "[ CMD:%s [ ID:%s DATA:%s ] SENDER:%s PORT:%s ]"

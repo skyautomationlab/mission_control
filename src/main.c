@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <jnxc_headers/jnxfile.h>
 #include <jnxc_headers/jnxhash.h>
+#include <pthread.h>
+#include "network/transceiver_control.h"
 #include "job_scheduler.h"
 jnx_hashmap *config = NULL;
 void usage()
@@ -66,8 +68,8 @@ int main(int argc,char **argv)
 	{
 		usage();
 	}
-
+	pthread_t transceiver_thread;
+	pthread_create(&transceiver_thread,NULL,&transceiver_control_listener_scheduler,NULL);
 	job_scheduler_start();
-
 	return 0;
 }

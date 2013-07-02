@@ -19,10 +19,19 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <jnxc_headers/jnxterm.h>
 #include "network/transceiver_control.h"
 #include "job_scheduler.h"
 #include "database/sql_interface_layer.h"
 #define TIME_WAIT sleep(1);
+
+/*-----------------------------------------------------------------------------
+ *  
+ * Job states
+ *
+ *  'NOT STARTED' -> 'QUEUED' -> 'IN PROGRESS' -> 'COMPLETED' 
+ *
+ *-----------------------------------------------------------------------------*/
 typedef enum trigger_status { ALREADYRUN,READYTORUN,NOTREADYTORUN }trigger_status;
 int job_scheduler_check_time(time_t candidate_time)
 {
@@ -41,6 +50,7 @@ int job_scheduler_check_time(time_t candidate_time)
 }
 void job_scheduler_loop()
 {
+	jnx_term_printf_in_color(JNX_COL_GREEN,"Job scheduler online\n");	
 	do
 	{
 		mysql_result_bucket *jobbucket = NULL;
@@ -50,20 +60,29 @@ void job_scheduler_loop()
 			for(x = 0; x < jobbucket->row_count; ++x)
 			{
 				trigger_status status = job_scheduler_check_time(atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"trigger_time")]));
+				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];
 				switch(status)
 				{
 					case ALREADYRUN:
 						break;
 					case READYTORUN:
-						if(strcmp(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")],"QUEUED") != 0)
+						/*-----------------------------------------------------------------------------
+						 *  Check whether the job has already been queued, if not - continue
+						 *-----------------------------------------------------------------------------*/
+						if(strcmp(job_status,"NOT STARTED") == 0)
 						{
 							mysql_result_bucket *send_bucket = NULL;
-							if(sql_send_query(&send_bucket,SET_MACHINE_STATUS,"QUEUED",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"machine_id")]) == 0)
+							/*-----------------------------------------------------------------------------
+							 *  Set the machine status to queued
+							 *-----------------------------------------------------------------------------*/
+							if(sql_send_query(&send_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"QUEUED") == 0)
 							{
-
 								mysql_result_bucket *machine_ip_bucket = NULL;	
 								char *machine_ip = NULL;
 								char *machine_port = NULL;
+								/*-----------------------------------------------------------------------------
+								 *  Get machine_id
+								 *-----------------------------------------------------------------------------*/
 								if(sql_send_query(&machine_ip_bucket,GET_MACHINE_FROM_ID,atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"machine_id")])) == 0)
 								{
 									machine_ip = machine_ip_bucket->rows[0][get_mysql_result_bucket_field_position(&machine_ip_bucket,"ip_address")];
@@ -72,13 +91,40 @@ void job_scheduler_loop()
 								remove_mysql_result_bucket(&machine_ip_bucket);
 								if(machine_ip == NULL || machine_port == NULL)
 								{
-									printf("Could not resolve machine ip and port\n");
+									jnx_term_printf_in_color(JNX_COL_RED,"Error resolving machine_ip and port\n");
 									exit(1);
 								}
+								/*-----------------------------------------------------------------------------
+								 *  Send our components to transceiver control and start a dialogue 
+								 *-----------------------------------------------------------------------------*/
 								if(transceiver_control_start_dialogue(machine_ip,machine_port,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"command")]) != 0)
 								{
-									printf("error sending to transceiver_control_start_dialogue\n");
-									exit(1);
+									jnx_term_printf_in_color(JNX_COL_RED,"Error sending to transceiver_control_start_dialogue\n");
+									/*-----------------------------------------------------------------------------
+									 *  Send failure status to sql
+									 *-----------------------------------------------------------------------------*/
+									mysql_result_bucket *failure_bucket = NULL;
+									if(sql_send_query(&failure_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"FAILED") == 0)
+									{
+										free(failure_bucket);
+									}else
+									{
+										jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
+									}
+								}
+								else
+								{
+									mysql_result_bucket *job_progess_bucket = NULL;
+									/*-----------------------------------------------------------------------------
+									 *  Set the job to IN PROGRESS if it has been transmitted correctly
+									 *-----------------------------------------------------------------------------*/
+									if(sql_send_query(&job_progess_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"IN PROGRESS") == 0)
+									{
+										free(job_progess_bucket);
+									}else
+									{
+										jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
+									}
 								}
 							}
 							free(send_bucket);
