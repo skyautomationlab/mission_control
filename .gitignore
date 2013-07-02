@@ -1,6 +1,6 @@
 # Object files
 *.o
-
+mission_control
 # Libraries
 *.lib
 *.a
