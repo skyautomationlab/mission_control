@@ -35,7 +35,9 @@ int transceiver_control_query(char *hostaddr, char *hostport, const char *templa
 	va_start(ap,template);
 	vsprintf(query,template,ap);
 	va_end(ap);
+#ifdef DEBUG
 	printf("Sending %s:%s query -> %s\n",hostaddr,hostport,query);
+#endif
 	jnx_network_send_message_callback smc = &transceiver_control_query_callback;	
 	return jnx_network_send_message(hostaddr,atoi(hostport),query,smc);	
 }
@@ -43,9 +45,11 @@ int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char 
 {
 	return transceiver_control_query(machine_ip,machine_port,API_COMMAND,"JOB",job_id,job_command,jnx_hash_get(config,"MISSIONCONTROLIP"),jnx_hash_get(config,"MISSIONCONTROLPORT"));
 }
+
 void transceiver_control_listener_endpoint(char *incoming_query, char *incoming_ip)
 {
-
+	printf("transceiver_control_listener_endpoint %s -> %s\n",incoming_ip,incoming_query);
+	
 }
 void *transceiver_control_listener_scheduler(void *arg)
 {

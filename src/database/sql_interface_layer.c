@@ -42,6 +42,8 @@ int sql_send_query(mysql_result_bucket **results_bucket, const char *querytempla
 	va_start(ap,querytemplate);
 	vsprintf(constructed_query,querytemplate,ap);
 	va_end(ap);
+#ifdef DEBUG
 	printf("Sending query -> %s\n",constructed_query);	
+#endif
 	return sql_query(constructed_query,results_bucket);
 }
