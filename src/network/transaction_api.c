@@ -44,9 +44,13 @@ api_command_obj *transaction_api_create_obj(char *query)
 			}
 			//split the current KVP 
 			char *split_string = strtok(line,":");
+			
+			
+			/*-----------------------------------------------------------------------------
+			 *  Will need to strdup into the char arrays before freeing line!
+			 *-----------------------------------------------------------------------------*/
 			if(strcmp(split_string,"CMD") == 0)
 			{
-				//derive the command type and convert into enum
 				char *raw_command = strtok(NULL,":");
 				if(strcmp(raw_command,"JOB") == 0)
 				{
@@ -66,22 +70,26 @@ api_command_obj *transaction_api_create_obj(char *query)
 			}
 			else if(strcmp(split_string,"ID") == 0)
 			{
-				cmd_obj->ID = strtok(NULL,":");
+				char *id = strtok(NULL,":");
+				cmd_obj->ID = strndup(id,strlen(id));
 				free(line);
 			}
 			else if(strcmp(split_string,"DATA") == 0)
 			{
-				cmd_obj->DATA = strtok(NULL,":");
+				char *data = strtok(NULL,":");
+				cmd_obj->DATA = strndup(data,strlen(data));
 				free(line);
 			}
 			else if(strcmp(split_string,"SENDER") == 0)
 			{
-				cmd_obj->SENDER = strtok(NULL,":");
+				char *sender = strtok(NULL,":");
+				cmd_obj->SENDER = strndup(sender,strlen(sender));
 				free(line);
 			}
 			else if(strcmp(split_string,"PORT") == 0)
 			{
-				cmd_obj->PORT = atoi(strtok(NULL,":"));
+				char *port = strtok(NULL,":");
+				cmd_obj->PORT = atoi(port);
 				free(line);
 			}
 			else
@@ -102,4 +110,7 @@ void transaction_api_delete_obj(api_command_obj *obj)
 		return;
 	}
 	free(obj);
+	free(obj->ID);
+	free(obj->SENDER);
+	free(obj->DATA);
 }
