@@ -22,6 +22,7 @@
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxhash.h>
 #include <pthread.h>
+#include "../database/sql_interface_layer.h"
 #include "transceiver_control.h"
 #include "transaction_api.h"
 extern jnx_hashmap *config;
@@ -36,9 +37,7 @@ int transceiver_control_query(char *hostaddr, char *hostport, const char *templa
 	va_start(ap,template);
 	vsprintf(query,template,ap);
 	va_end(ap);
-#ifdef DEBUG
-	printf("Sending %s:%s query -> %s\n",hostaddr,hostport,query);
-#endif
+	jnx_term_printf_in_color(JNX_COL_YELLOW,"OUT : %s\n",query);
 	jnx_network_send_message_callback smc = &transceiver_control_query_callback;	
 	return jnx_network_send_message(hostaddr,atoi(hostport),query,smc);	
 }
@@ -54,9 +53,31 @@ void *transciever_control_endpoint_worker(void *arg)
 {
 	char *query = (char*)arg;
 	api_command_obj *obj = transaction_api_create_obj(query);
-	printf("CMD:%d ID:%s DATA:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->SENDER,obj->PORT);
+	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->SENDER,obj->PORT);
 
+	switch(obj->CMD)
+	{
+		case JOB:
+			printf("transceiver_control_listener_endpoint_worker : Not expecting to be sent JOB from an open node dialogue\n");
+			break;
+		case RESULT:
 
+			break;
+		case STATUS:
+			printf("transciever_control_endpoint_worker : Writing status update\n");
+			mysql_result_bucket *statusbucket = NULL;
+			if(sql_send_query(&statusbucket,SET_JOB_STATUS,obj->ID,obj->DATA) != 0)
+			{
+				printf("sql_send_query updating job status via transceiver_control_listener_endpoint_worker for job %s\n",obj->ID);
+			}	
+			break;
+		case UNKNOWN:
+			printf("transciever_control_endpoint_worker : Unknown API command %d\n",obj->CMD);	
+			break;
+		default:
+			printf("transciever_control_endpoint_worker : Unknown API command %d\n",obj->CMD);	
+			break;
+	}
 
 	transaction_api_delete_obj(obj);
 }
