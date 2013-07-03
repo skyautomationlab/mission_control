@@ -109,8 +109,8 @@ void transaction_api_delete_obj(api_command_obj *obj)
 	{
 		return;
 	}
-	free(obj);
 	free(obj->ID);
 	free(obj->SENDER);
 	free(obj->DATA);
+	free(obj);
 }
