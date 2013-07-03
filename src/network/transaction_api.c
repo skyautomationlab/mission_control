@@ -62,22 +62,27 @@ api_command_obj *transaction_api_create_obj(char *query)
 				{
 					cmd_obj->CMD = UNKNOWN;
 				}
+				free(line);
 			}
 			else if(strcmp(split_string,"ID") == 0)
 			{
 				cmd_obj->ID = strtok(NULL,":");
+				free(line);
 			}
 			else if(strcmp(split_string,"DATA") == 0)
 			{
 				cmd_obj->DATA = strtok(NULL,":");
+				free(line);
 			}
 			else if(strcmp(split_string,"SENDER") == 0)
 			{
 				cmd_obj->SENDER = strtok(NULL,":");
+				free(line);
 			}
 			else if(strcmp(split_string,"PORT") == 0)
 			{
 				cmd_obj->PORT = atoi(strtok(NULL,":"));
+				free(line);
 			}
 			else
 			{
@@ -88,7 +93,7 @@ api_command_obj *transaction_api_create_obj(char *query)
 		*buffer++;
 	}
 
-	return cmd_obj;
+	return	cmd_obj;
 }
 void transaction_api_delete_obj(api_command_obj *obj)
 {
@@ -96,8 +101,5 @@ void transaction_api_delete_obj(api_command_obj *obj)
 	{
 		return;
 	}
-	free(obj->SENDER);
-	free(obj->ID);
-	free(obj->DATA);
 	free(obj);
 }
