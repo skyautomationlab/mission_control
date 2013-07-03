@@ -111,20 +111,10 @@ void job_scheduler_loop()
 									{
 										jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
 									}
-								}
-								else
-								{
-									mysql_result_bucket *job_progess_bucket = NULL;
+									
 									/*-----------------------------------------------------------------------------
-									 *  Set the job to IN PROGRESS if it has been transmitted correctly
+									 *  The node will tell us when the job is progressing, not the other way around!
 									 *-----------------------------------------------------------------------------*/
-									if(sql_send_query(&job_progess_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"IN PROGRESS") == 0)
-									{
-										free(job_progess_bucket);
-									}else
-									{
-										jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
-									}
 								}
 							}
 							free(send_bucket);

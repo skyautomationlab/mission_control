@@ -21,6 +21,7 @@
 #include <jnxc_headers/jnxnetwork.h>
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxhash.h>
+#include <pthread.h>
 #include "transceiver_control.h"
 #include "transaction_api.h"
 extern jnx_hashmap *config;
@@ -45,11 +46,25 @@ int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char 
 {
 	return transceiver_control_query(machine_ip,machine_port,API_COMMAND,"JOB",job_id,job_command,jnx_hash_get(config,"MISSIONCONTROLIP"),jnx_hash_get(config,"MISSIONCONTROLPORT"));
 }
+/*-----------------------------------------------------------------------------
+ * Below is the transceiver receiver logic. 
+ * A new thread will be spawned for every received query 
+ *-----------------------------------------------------------------------------*/
+void *transciever_control_endpoint_worker(void *arg)
+{
+	char *query = (char*)arg;
+	api_command_obj *obj = transaction_api_create_obj(query);
+	printf("CMD:%d ID:%s DATA:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->SENDER,obj->PORT);
 
+
+
+	transaction_api_delete_obj(obj);
+}
 void transceiver_control_listener_endpoint(char *incoming_query, char *incoming_ip)
 {
-	printf("transceiver_control_listener_endpoint %s -> %s\n",incoming_ip,incoming_query);
-	
+	printf("transceiver_control_listener_endpoint receieved message from  %s\n",incoming_ip);
+	pthread_t worker_thread;
+	pthread_create(&worker_thread,NULL,transciever_control_endpoint_worker,incoming_query);
 }
 void *transceiver_control_listener_scheduler(void *arg)
 {
