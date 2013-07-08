@@ -48,6 +48,36 @@ int result_directory()
 		return 0;
 	}
 }
+int job_directory_create(char *job_id)
+{
+	printf("Creating job directory\n");
+	char *directory = jnx_hash_get(config,"RESULTDIR");
+	char str[256];
+	sprintf(str,"%s/%s",directory,job_id);
+	return mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+}
+int job_directory(char *job_id)
+{
+
+	char *directory = jnx_hash_get(config,"RESULTDIR");
+	if(directory)
+	{
+		char str[256];
+		sprintf(str,"%s/%s",directory,job_id);
+		struct stat s;
+		int err = stat(str,&s);
+		if(err == -1)
+		{
+			return 0;
+		}else
+		{
+			return 1;
+		}
+	}else
+	{
+		return 0;
+	}
+}
 char *result_management_full_path_create(char *jobid, char *filename)
 {
 	if(!result_directory())
@@ -58,9 +88,16 @@ char *result_management_full_path_create(char *jobid, char *filename)
 			exit(1);
 		}
 	}
-
+	if(!job_directory(jobid))
+	{
+		if(job_directory_create(jobid) != 0)
+		{
+			perror("result_management_full_path_create");
+			exit(1);
+		}
+	}
 	char *buffer = malloc(sizeof(1024));
 	char *directory = jnx_hash_get(config,"RESULTDIR");
-	sprintf(buffer,"%s/%s",directory,filename);
+	sprintf(buffer,"%s/%s/%s",directory,jobid,filename);
 	return buffer;
 }
