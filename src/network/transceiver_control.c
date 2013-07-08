@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <jnxc_headers/jnxfile.h>
 #include <jnxc_headers/jnxnetwork.h>
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxhash.h>
@@ -69,6 +70,10 @@ void *transciever_control_endpoint_worker(void *arg)
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
 			char *deencoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			if(obj->OTHER)
+			{
+				jnx_file_writeb(obj->OTHER,deencoded_output,output);
+			}
 			free(deencoded_output);	
 			break;
 		case STATUS:
