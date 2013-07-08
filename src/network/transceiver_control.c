@@ -23,6 +23,7 @@
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxhash.h>
 #include <pthread.h>
+#include "../result_management.h"
 #include "../database/sql_interface_layer.h"
 #include "../conversion/base64.h"
 #include "transceiver_control.h"
@@ -72,7 +73,7 @@ void *transciever_control_endpoint_worker(void *arg)
 			char *deencoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
 			if(obj->OTHER)
 			{
-				jnx_file_writeb(obj->OTHER,deencoded_output,output);
+				jnx_file_writeb(result_management_full_path_create(obj->ID,obj->OTHER),deencoded_output,output);
 			}
 			free(deencoded_output);	
 			break;
