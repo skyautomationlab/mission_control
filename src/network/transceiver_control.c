@@ -73,7 +73,9 @@ void *transciever_control_endpoint_worker(void *arg)
 			char *deencoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
 			if(obj->OTHER)
 			{
-				jnx_file_writeb(result_management_full_path_create(obj->ID,obj->OTHER),deencoded_output,output);
+				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
+				jnx_file_writeb(resultspath,deencoded_output,output);
+				free(resultspath);
 			}
 			free(deencoded_output);	
 			break;
