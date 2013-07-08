@@ -23,13 +23,10 @@
 #include <jnxc_headers/jnxhash.h>
 #include <pthread.h>
 #include "../database/sql_interface_layer.h"
+#include "../conversion/base64.h"
 #include "transceiver_control.h"
 #include "transaction_api.h"
 extern jnx_hashmap *config;
-void transceiver_control_query_callback(char *reply)
-{
-	printf("transceiver_control_query_callback: %s\n",reply);
-}
 int transceiver_control_query(char *hostaddr, char *hostport, const char *template, ...)
 {
 	char query[1024];
@@ -38,12 +35,18 @@ int transceiver_control_query(char *hostaddr, char *hostport, const char *templa
 	vsprintf(query,template,ap);
 	va_end(ap);
 	jnx_term_printf_in_color(JNX_COL_YELLOW,"OUT : %s\n",query);
-	jnx_network_send_message_callback smc = &transceiver_control_query_callback;	
-	return jnx_network_send_message(hostaddr,atoi(hostport),query,smc);	
+	if(jnx_network_send_message(hostaddr,atoi(hostport),query,strlen(query)) != -1)
+	{
+		return 0;
+	}else
+	{
+		return 1;
+	}
+
 }
 int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char *job_id, char *job_command)
 {
-	return transceiver_control_query(machine_ip,machine_port,API_COMMAND,"JOB",job_id,job_command,jnx_hash_get(config,"MISSIONCONTROLIP"),jnx_hash_get(config,"MISSIONCONTROLPORT"));
+	return transceiver_control_query(machine_ip,machine_port,API_COMMAND,"JOB",job_id,job_command,/* Other field is left empty */ "",jnx_hash_get(config,"MISSIONCONTROLIP"),jnx_hash_get(config,"MISSIONCONTROLPORT"));
 }
 /*-----------------------------------------------------------------------------
  * Below is the transceiver receiver logic. 
@@ -52,8 +55,10 @@ int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char 
 void *transciever_control_endpoint_worker(void *arg)
 {
 	char *query = (char*)arg;
+	printf("Raw query %s\n",query);
+	jnx_term_printf_in_color(JNX_COL_RED,"raw length %d\n",strlen(query));
 	api_command_obj *obj = transaction_api_create_obj(query);
-	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->SENDER,obj->PORT);
+	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
 
 	switch(obj->CMD)
 	{
@@ -61,7 +66,10 @@ void *transciever_control_endpoint_worker(void *arg)
 			printf("transceiver_control_listener_endpoint_worker : Not expecting to be sent JOB from an open node dialogue\n");
 			break;
 		case RESULT:
-
+			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
+			size_t output;
+			char *deencoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			free(deencoded_output);	
 			break;
 		case STATUS:
 			printf("transciever_control_endpoint_worker : Writing status update\n");
@@ -81,7 +89,7 @@ void *transciever_control_endpoint_worker(void *arg)
 
 	transaction_api_delete_obj(obj);
 }
-void transceiver_control_listener_endpoint(char *incoming_query, char *incoming_ip)
+void transceiver_control_listener_endpoint(char *incoming_query,size_t query_len, char *incoming_ip)
 {
 	printf("transceiver_control_listener_endpoint receieved message from  %s\n",incoming_ip);
 	pthread_t worker_thread;

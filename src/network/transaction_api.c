@@ -19,7 +19,6 @@
 #include <string.h>
 #include <stdio.h>
 #include "transaction_api.h"
-// [{CMD:%s}{ID:%s}{DATA:%s}{SENDER:%s}{PORT:%s}]
 api_command_obj *transaction_api_create_obj(char *query)
 {	
 	char *buffer = query;
@@ -44,14 +43,18 @@ api_command_obj *transaction_api_create_obj(char *query)
 			}
 			//split the current KVP 
 			char *split_string = strtok(line,":");
-			
-			
+
+
 			/*-----------------------------------------------------------------------------
 			 *  Will need to strdup into the char arrays before freeing line!
 			 *-----------------------------------------------------------------------------*/
 			if(strcmp(split_string,"CMD") == 0)
 			{
 				char *raw_command = strtok(NULL,":");
+				if(!raw_command)
+				{
+					cmd_obj->CMD = UNKNOWN;
+				}
 				if(strcmp(raw_command,"JOB") == 0)
 				{
 					cmd_obj->CMD = JOB;
@@ -71,25 +74,55 @@ api_command_obj *transaction_api_create_obj(char *query)
 			else if(strcmp(split_string,"ID") == 0)
 			{
 				char *id = strtok(NULL,":");
+				if(!id){
+				cmd_obj->ID = strndup("NULL",strlen("NULL"));
+				}else{
 				cmd_obj->ID = strndup(id,strlen(id));
+				}
 				free(line);
 			}
 			else if(strcmp(split_string,"DATA") == 0)
 			{
 				char *data = strtok(NULL,":");
-				cmd_obj->DATA = strndup(data,strlen(data));
+				if(!data){
+					cmd_obj->DATA = strndup("NULL",strlen("NULL"));
+				}else{
+					cmd_obj->DATA = strndup(data,strlen(data));
+				}
+				free(line);
+			}
+			else if(strcmp(split_string,"OTHER") == 0)
+			{
+				char *other = strtok(NULL,":");
+				if(!other)
+				{
+					cmd_obj->OTHER = strndup("NULL",strlen("NULL"));
+				}else{
+					cmd_obj->OTHER = strndup(other,strlen(other));
+				}
 				free(line);
 			}
 			else if(strcmp(split_string,"SENDER") == 0)
 			{
 				char *sender = strtok(NULL,":");
-				cmd_obj->SENDER = strndup(sender,strlen(sender));
+				if(!sender)
+				{
+					cmd_obj->SENDER = strndup("NULL",strlen("NULL"));
+				}
+				else{
+					cmd_obj->SENDER = strndup(sender,strlen(sender));
+				}
 				free(line);
 			}
 			else if(strcmp(split_string,"PORT") == 0)
 			{
 				char *port = strtok(NULL,":");
-				cmd_obj->PORT = atoi(port);
+				if(!port)
+				{
+					cmd_obj->PORT = -1;
+				}else{
+					cmd_obj->PORT = atoi(port);
+				}
 				free(line);
 			}
 			else
@@ -110,6 +143,7 @@ void transaction_api_delete_obj(api_command_obj *obj)
 		return;
 	}
 	free(obj->ID);
+	free(obj->OTHER);
 	free(obj->SENDER);
 	free(obj->DATA);
 	free(obj);

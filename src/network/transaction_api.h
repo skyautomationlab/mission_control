@@ -17,19 +17,19 @@
  */
 #ifndef __TRANSACTION_API_H__
 #define __TRANSACTION_API_H__
-
 /*-----------------------------------------------------------------------------
  *  Define CMD
  *  - JOB
  *  - RESULT
  *  - STATUS
  *-----------------------------------------------------------------------------*/
-#define API_COMMAND "[{CMD:%s}{ID:%s}{DATA:%s}{SENDER:%s}{PORT:%s}]"
+#define API_COMMAND "[{CMD:%s}{ID:%s}{DATA:%s}{OTHER:%s}{SENDER:%s}{PORT:%s}]"
 typedef enum command_type{ JOB, RESULT, STATUS,UNKNOWN }command_type;
 typedef struct{
 	command_type CMD;
 	char *ID;
 	char *DATA;
+	char *OTHER;
 	char *SENDER;
 	int PORT;
 }api_command_obj;
