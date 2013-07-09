@@ -33,20 +33,22 @@
  *
  *-----------------------------------------------------------------------------*/
 typedef enum trigger_status { ALREADYRUN,READYTORUN,NOTREADYTORUN }trigger_status;
-long job_scheduler_check_time(time_t candidate_time, trigger_status *status)
+int job_scheduler_check_time(time_t candidate_time, long *difference)
 {
 	time_t current_time = time(0);
-	(*status) = NOTREADYTORUN;
+	(*difference) = (candidate_time - current_time);
 	if((candidate_time - current_time) < 0)
 	{
-		status = ALREADYRUN;	
+		return ALREADYRUN;
 	}
 	if((candidate_time - current_time) <= 60)
 	{
-		(*status) = READYTORUN;
+		return READYTORUN;
+	}else
+	{
+		return NOTREADYTORUN;
 	}
-
-	return (candidate_time - current_time);
+	return NOTREADYTORUN;
 }
 void job_scheduler_loop()
 {
@@ -60,8 +62,8 @@ void job_scheduler_loop()
 			for(x = 0; x < jobbucket->row_count; ++x)
 			{
 				time_t job_trigger = atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"trigger_time")]);
-				trigger_status status;
-				long time_difference = job_scheduler_check_time(job_trigger,&status);
+				long *difference;
+				trigger_status status = job_scheduler_check_time(job_trigger,difference);
 				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];
 				switch(status)
 				{
@@ -124,7 +126,8 @@ void job_scheduler_loop()
 						}
 						break;
 					case NOTREADYTORUN:
-						printf("Job %s will be ready to run in %ld seconds\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")],time_difference);
+						
+						
 						break;
 				}	
 			}
