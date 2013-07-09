@@ -62,13 +62,13 @@ void job_scheduler_loop()
 			for(x = 0; x < jobbucket->row_count; ++x)
 			{
 				time_t job_trigger = atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"trigger_time")]);
-				long *difference;
-				trigger_status status = job_scheduler_check_time(job_trigger,difference);
+				long difference;
+				trigger_status status = job_scheduler_check_time(job_trigger,&difference);
 				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];
 				switch(status)
 				{
 					case ALREADYRUN:
-						printf("%s has status of ALREADYRUN\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")]);
+						printf("%s has status of ALREADYRUN %ld\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")],difference);
 						break;
 					case READYTORUN:
 						/*-----------------------------------------------------------------------------
@@ -126,8 +126,7 @@ void job_scheduler_loop()
 						}
 						break;
 					case NOTREADYTORUN:
-						
-						
+						printf("%s has status of NOT READY TO RUN %lds\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")],difference);
 						break;
 				}	
 			}
