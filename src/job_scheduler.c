@@ -33,20 +33,20 @@
  *
  *-----------------------------------------------------------------------------*/
 typedef enum trigger_status { ALREADYRUN,READYTORUN,NOTREADYTORUN }trigger_status;
-int job_scheduler_check_time(time_t candidate_time)
+long job_scheduler_check_time(time_t candidate_time, trigger_status *status)
 {
 	time_t current_time = time(0);
+	(*status) = NOTREADYTORUN;
 	if((candidate_time - current_time) < 0)
 	{
-		return ALREADYRUN;
+		status = ALREADYRUN;	
 	}
 	if((candidate_time - current_time) <= 60)
 	{
-		return READYTORUN;
-	}else
-	{
-		return NOTREADYTORUN;
+		(*status) = READYTORUN;
 	}
+
+	return (candidate_time - current_time);
 }
 void job_scheduler_loop()
 {
@@ -59,11 +59,14 @@ void job_scheduler_loop()
 			int x;
 			for(x = 0; x < jobbucket->row_count; ++x)
 			{
-				trigger_status status = job_scheduler_check_time(atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"trigger_time")]));
+				time_t job_trigger = atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"trigger_time")]);
+				trigger_status status;
+				long time_difference = job_scheduler_check_time(job_trigger,&status);
 				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];
 				switch(status)
 				{
 					case ALREADYRUN:
+						printf("%s has status of ALREADYRUN\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")]);
 						break;
 					case READYTORUN:
 						/*-----------------------------------------------------------------------------
@@ -111,7 +114,7 @@ void job_scheduler_loop()
 									{
 										jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
 									}
-									
+
 									/*-----------------------------------------------------------------------------
 									 *  The node will tell us when the job is progressing, not the other way around!
 									 *-----------------------------------------------------------------------------*/
@@ -121,6 +124,7 @@ void job_scheduler_loop()
 						}
 						break;
 					case NOTREADYTORUN:
+						printf("Job %s will be ready to run in %ld seconds\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")],time_difference);
 						break;
 				}	
 			}

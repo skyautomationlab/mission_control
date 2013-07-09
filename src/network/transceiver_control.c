@@ -85,6 +85,14 @@ void *transciever_control_endpoint_worker(void *arg)
 			if(sql_send_query(&statusbucket,SET_JOB_STATUS,obj->ID,obj->DATA) != 0)
 			{
 				printf("sql_send_query updating job status via transceiver_control_listener_endpoint_worker for job %s\n",obj->ID);
+			}
+			if(strcmp(obj->DATA,"COMPLETED") == 0)
+			{
+				mysql_result_bucket *completedbucket = NULL;
+				if(sql_send_query(&completedbucket,UPDATE_JOB_INTERVAL,obj->ID) != 0)
+				{
+					printf("sql_send_query error updating job interval for job %s\n",obj->ID);
+				}
 			}	
 			break;
 		case UNKNOWN:
