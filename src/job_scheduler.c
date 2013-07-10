@@ -68,7 +68,6 @@ void job_scheduler_loop()
 				switch(status)
 				{
 					case ALREADYRUN:
-						printf("%s has status of ALREADYRUN %ld\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")],difference);
 						break;
 					case READYTORUN:
 						/*-----------------------------------------------------------------------------

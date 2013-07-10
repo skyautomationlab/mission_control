@@ -70,14 +70,15 @@ void *transciever_control_endpoint_worker(void *arg)
 		case RESULT:
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
-			char *deencoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
 				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
-				jnx_file_writeb(resultspath,deencoded_output,output);
+				jnx_file_writeb(resultspath,decoded_output,output);
 				free(resultspath);
 			}
-			free(deencoded_output);	
+			free(decoded_output);	
 			break;
 		case STATUS:
 			printf("transciever_control_endpoint_worker : Writing status update\n");
