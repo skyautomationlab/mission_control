@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <jnxc_headers/jnxbase64.h>
 #include <jnxc_headers/jnxfile.h>
 #include <jnxc_headers/jnxnetwork.h>
 #include <jnxc_headers/jnxterm.h>
@@ -25,7 +26,6 @@
 #include <pthread.h>
 #include "../result_management.h"
 #include "../database/sql_interface_layer.h"
-#include "../conversion/base64.h"
 #include "transceiver_control.h"
 #include "transaction_api.h"
 extern jnx_hashmap *config;
@@ -70,12 +70,13 @@ void *transciever_control_endpoint_worker(void *arg)
 		case RESULT:
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
-			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			char *decoded_output = jnx_base64_decode(obj->DATA,strlen(obj->DATA),&output);		
 			printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
 				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
-				jnx_file_writeb(resultspath,decoded_output,output);
+				printf("results path %s\n",resultspath);
+				jnx_file_write(resultspath,decoded_output,output);
 				free(resultspath);
 			}
 			free(decoded_output);	
