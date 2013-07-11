@@ -134,7 +134,7 @@ char *result_management_full_path_create(char *jobid, char *filename)
 			perror("result_management_full_path_create");
 		}
 	}
-	char *buffer = malloc(sizeof(1024));
+	char *buffer = malloc(sizeof(char) * 1024);
 	char *directory = jnx_hash_get(config,"RESULTDIR");
 	sprintf(buffer,"%s/%s/%d/%s",directory,jobid,(int)current_time,filename);
 	return buffer;

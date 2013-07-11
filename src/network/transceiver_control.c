@@ -76,31 +76,10 @@ void *transciever_control_endpoint_worker(void *arg)
 			printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
-				//char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
-			//	printf("results path %s\n",resultspath);
+				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
 
-				//jnx_file_write(resultspath,decoded_output,output);
-				//
-				char *results_dir = "results";
-				char *job_dir = obj->ID;
-				char *filename = obj->OTHER;
-				int current_time = (int)time(NULL);
-				char output_path[256];
-				sprintf(output_path,"mkdir -p %s/%s/%d",results_dir,job_dir,current_time);
-
-				system(output_path);
-
-
-				bzero(output_path,256);
-
-				sprintf(output_path,"%s/%s/%d/%s",results_dir,job_dir,current_time,filename);
-
-				printf("output path -> %s\n",output_path);
-				FILE *fp = fopen(output_path,"w");
-				if(!fp) { exit(1); };
-				fwrite(decoded_output,1,output,fp);
-				fclose(fp);	
-			//	free(resultspath);
+				jnx_file_write(resultspath,decoded_output,output);
+				free(resultspath);
 			}
 			printf("decoded_output length %zu\n",output);
 			free(decoded_output);	
