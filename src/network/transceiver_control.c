@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <jnxc_headers/jnxbase64.h>
+#include "../conversion/base64.h"
 #include <jnxc_headers/jnxfile.h>
 #include <jnxc_headers/jnxnetwork.h>
 #include <jnxc_headers/jnxterm.h>
@@ -71,16 +71,38 @@ void *transciever_control_endpoint_worker(void *arg)
 		case RESULT:
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
-			char *decoded_output = jnx_base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
+			
 			printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
-				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
-				printf("results path %s\n",resultspath);
+				//char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
+			//	printf("results path %s\n",resultspath);
 
-				jnx_file_write(resultspath,decoded_output,output);
-				free(resultspath);
+				//jnx_file_write(resultspath,decoded_output,output);
+				//
+				char *results_dir = "results";
+				char *job_dir = obj->ID;
+				char *filename = obj->OTHER;
+				int current_time = (int)time(NULL);
+				char output_path[256];
+				sprintf(output_path,"mkdir -p %s/%s/%d",results_dir,job_dir,current_time);
+
+				system(output_path);
+
+
+				bzero(output_path,256);
+
+				sprintf(output_path,"%s/%s/%d/%s",results_dir,job_dir,current_time,filename);
+
+				printf("output path -> %s\n",output_path);
+				FILE *fp = fopen(output_path,"w");
+				if(!fp) { exit(1); };
+				fwrite(decoded_output,1,output,fp);
+				fclose(fp);	
+			//	free(resultspath);
 			}
+			printf("decoded_output length %zu\n",output);
 			free(decoded_output);	
 			break;
 		case STATUS:
@@ -113,7 +135,6 @@ void transceiver_control_listener_endpoint(char *incoming_query,size_t query_len
 {
 	printf("transceiver_control_listener_endpoint receieved message from  %s\n",incoming_ip);
 	pthread_t worker_thread;
-	sleep(2);
 	pthread_create(&worker_thread,NULL,transciever_control_endpoint_worker,incoming_query);
 }
 void *transceiver_control_listener_scheduler(void *arg)
