@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <jnxc_headers/jnxbase64.h>
@@ -48,7 +49,7 @@ int transceiver_control_query(char *hostaddr, char *hostport, const char *templa
 }
 int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char *job_id, char *job_command)
 {
-	return transceiver_control_query(machine_ip,machine_port,API_COMMAND,"JOB",job_id,job_command,/* Other field is left empty */ "",jnx_hash_get(config,"MISSIONCONTROLIP"),jnx_hash_get(config,"MISSIONCONTROLPORT"));
+	return transceiver_control_query(machine_ip,machine_port,API_COMMAND,"JOB",job_id,job_command,/* Other field is left empty */ "",(char*)jnx_hash_get(config,"MISSIONCONTROLIP"),(char*)jnx_hash_get(config,"MISSIONCONTROLPORT"));
 }
 /*-----------------------------------------------------------------------------
  * Below is the transceiver receiver logic. 
@@ -76,6 +77,7 @@ void *transciever_control_endpoint_worker(void *arg)
 			{
 				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
 				printf("results path %s\n",resultspath);
+
 				jnx_file_write(resultspath,decoded_output,output);
 				free(resultspath);
 			}
@@ -111,6 +113,7 @@ void transceiver_control_listener_endpoint(char *incoming_query,size_t query_len
 {
 	printf("transceiver_control_listener_endpoint receieved message from  %s\n",incoming_ip);
 	pthread_t worker_thread;
+	sleep(2);
 	pthread_create(&worker_thread,NULL,transciever_control_endpoint_worker,incoming_query);
 }
 void *transceiver_control_listener_scheduler(void *arg)
@@ -118,5 +121,5 @@ void *transceiver_control_listener_scheduler(void *arg)
 	assert(jnx_hash_get(config,"MISSIONCONTROLPORT"));
 	jnx_network_listener_callback lsc = &transceiver_control_listener_endpoint;
 	jnx_term_printf_in_color(JNX_COL_GREEN,"Transceiver online\n");	
-	jnx_network_setup_listener(atoi(jnx_hash_get(config,"MISSIONCONTROLPORT")),lsc);
+	jnx_network_setup_listener(atoi((char*)jnx_hash_get(config,"MISSIONCONTROLPORT")),lsc);
 }

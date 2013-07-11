@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <time.h>
 extern jnx_hashmap *config; 
 
 int result_directory_create()
@@ -58,7 +59,6 @@ int job_directory_create(char *job_id)
 }
 int job_directory(char *job_id)
 {
-
 	char *directory = jnx_hash_get(config,"RESULTDIR");
 	if(directory)
 	{
@@ -67,6 +67,36 @@ int job_directory(char *job_id)
 		struct stat s;
 		int err = stat(str,&s);
 		if(err == -1)
+		{
+			return 0;
+		}else
+		{
+			return 1;
+		}
+	}else
+	{
+		return 0;
+	}
+}
+int timestamp_directory_create(char *job_id, time_t current_time)
+{
+	printf("Creating timestamp directory\n");
+	char *directory = jnx_hash_get(config,"RESULTDIR");
+	char str[256];
+	sprintf(str,"%s/%s/%d",directory,job_id,(int)current_time);
+	return mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+}
+int timestamp_directory(char *job_id, time_t current_time)
+{
+	char *directory = jnx_hash_get(config,"RESULTDIR");
+
+	if(directory)
+	{
+		char str[256];
+		sprintf(str,"%s/%s/%d",directory,job_id,(int)current_time);
+		struct stat s;
+		int err = stat(str,&s);
+		if( err = -1)
 		{
 			return 0;
 		}else
@@ -96,8 +126,16 @@ char *result_management_full_path_create(char *jobid, char *filename)
 			exit(1);
 		}
 	}
+	time_t current_time = time(NULL);
+    	if(!timestamp_directory(jobid,current_time))
+	{
+		if(timestamp_directory_create(jobid,current_time) != 0)
+		{
+			perror("result_management_full_path_create");
+		}
+	}
 	char *buffer = malloc(sizeof(1024));
 	char *directory = jnx_hash_get(config,"RESULTDIR");
-	sprintf(buffer,"%s/%s/%s",directory,jobid,filename);
+	sprintf(buffer,"%s/%s/%d/%s",directory,jobid,(int)current_time,filename);
 	return buffer;
 }
