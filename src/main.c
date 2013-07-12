@@ -21,6 +21,7 @@
 #include <jnxc_headers/jnxfile.h>
 #include <jnxc_headers/jnxhash.h>
 #include <pthread.h>
+#include "network/beacon.h"
 #include "network/transceiver_control.h"
 #include "job_scheduler.h"
 jnx_hashmap *config = NULL;
@@ -70,6 +71,7 @@ int main(int argc,char **argv)
 	}
 	pthread_t transceiver_thread;
 	pthread_create(&transceiver_thread,NULL,&transceiver_control_listener_scheduler,NULL);
+	beacon_pulse();
 	job_scheduler_start();
 	return 0;
 }
