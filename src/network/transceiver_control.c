@@ -101,7 +101,7 @@ void *transciever_control_endpoint_worker(void *arg)
 			}	
 			break;
 		case ALIVE:
-
+			
 			break;
 		case UNKNOWN:
 			printf("transciever_control_endpoint_worker : Unknown API command %d\n",obj->CMD);	
