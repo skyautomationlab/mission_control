@@ -56,7 +56,6 @@ void beacon_pulse(void)
 }
 void beacon_message_intercept(char *msg)
 {
-	printf("Received message %s\n");
 }
 void *beacon_receive(void*ar)
 {
