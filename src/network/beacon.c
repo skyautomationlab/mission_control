@@ -37,9 +37,9 @@
 extern jnx_hashmap *config;
 void beacon_send(void)
 {
-	char *message = "CHALLENGE";
-	jnx_network_send_broadcast(BPORT,BGROUP,message);
-	printf("beacon_send: Sending broadcast\n");
+	char query[1024];
+	sprintf(query,API_COMMAND,ALIVE,"","","",jnx_hash_get(config,"MISSIONCONTROLIP"),jnx_hash_get(config,"MISSIONCONTROLPORT"));
+	jnx_network_send_broadcast(BPORT,BGROUP,query);
 }
 void *beacon_loop(void*ar)
 {
