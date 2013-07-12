@@ -29,6 +29,7 @@
 #include "../database/sql_interface_layer.h"
 #include "transceiver_control.h"
 #include "transaction_api.h"
+#define MAX_CONNECTIONS 24
 extern jnx_hashmap *config;
 int transceiver_control_query(char *hostaddr, char *hostport, const char *template, ...)
 {
@@ -130,5 +131,5 @@ void *transceiver_control_listener_scheduler(void *arg)
 	assert(jnx_hash_get(config,"MISSIONCONTROLPORT"));
 	jnx_network_listener_callback lsc = &transceiver_control_listener_endpoint;
 	jnx_term_printf_in_color(JNX_COL_GREEN,"Transceiver online\n");	
-	jnx_network_setup_listener(atoi((char*)jnx_hash_get(config,"MISSIONCONTROLPORT")),lsc);
+	jnx_network_setup_listener(atoi((char*)jnx_hash_get(config,"MISSIONCONTROLPORT")),MAX_CONNECTIONS,lsc);
 }
