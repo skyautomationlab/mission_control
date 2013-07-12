@@ -100,8 +100,14 @@ void *transciever_control_endpoint_worker(void *arg)
 				}
 			}	
 			break;
+
 		case ALIVE:
-			
+		
+			if(sql_send_query(NULL,SET_MACHINE_STATUS,obj->DATA,obj->SENDER) != 0)
+			{
+					printf("sql_send_query error updating machine status for machine %s\n",obj->SENDER);
+			}
+					
 			break;
 		case UNKNOWN:
 			printf("transciever_control_endpoint_worker : Unknown API command %d\n",obj->CMD);	
