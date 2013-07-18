@@ -25,7 +25,8 @@
  *  - ALIVE
  *-----------------------------------------------------------------------------*/
 #define API_COMMAND "[{CMD`%s}{ID`%s}{DATA`%s}{OTHER`%s}{SENDER`%s}{PORT`%s}]"
-typedef enum command_type{ JOB, RESULT, STATUS,ALIVE,UNKNOWN }command_type;
+#define APICOMMANDARGNO 5
+typedef enum command_type{ JOB, RESULT, STATUS,ALIVE,SYSTEM,UNKNOWN }command_type;
 typedef struct{
 	command_type CMD;
 	char *ID;

@@ -25,6 +25,13 @@ api_command_obj *transaction_api_create_obj(char *query)
 	if(strlen(query) <= 0)
 	{
 		return NULL;
+	
+	}//Too small to even be a real part of the API
+	else if(strlen(API_COMMAND) - APICOMMANDARGNO > strlen(query))
+	{
+		printf("query %d API %d\n",strlen(query),strlen(API_COMMAND));
+		printf("Too short to be an API command\n");
+		return NULL;
 	}
 	//Create the data structure
 	api_command_obj *cmd_obj = malloc(sizeof(api_command_obj));
@@ -70,6 +77,10 @@ api_command_obj *transaction_api_create_obj(char *query)
 				else if(strcmp(raw_command,"ALIVE") == 0)
 				{
 					cmd_obj->CMD = ALIVE;
+				}
+				else if(strcmp(raw_command,"SYSTEM") == 0)
+				{
+					cmd_obj->CMD = SYSTEM;
 				}
 				else
 				{
