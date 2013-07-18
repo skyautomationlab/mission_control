@@ -33,7 +33,9 @@
 extern jnx_hashmap *config;
 int transceiver_control_query(char *hostaddr, char *hostport, const char *template, ...)
 {
-	char query[1024];
+	printf("host addr %s\n",hostaddr);
+	printf("Host port %s\n",hostport);
+	char query[2048];
 	va_list ap;
 	va_start(ap,template);
 	vsprintf(query,template,ap);
