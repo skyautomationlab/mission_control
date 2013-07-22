@@ -79,10 +79,18 @@ void *transciever_control_endpoint_worker(void *arg)
 			printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
-				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
-
-				jnx_file_write(resultspath,decoded_output,output);
-				free(resultspath);
+				/*  get job trigger_time */
+				mysql_result_bucket *trigger_bucket = NULL;
+				if(sql_send_query(&trigger_bucket,GET_JOB_TRIGGER_TIME,obj->ID) == 0)
+				{
+					time_t trigger_time = (time_t)trigger_bucket->rows[0][get_mysql_result_bucket_field_position(&trigger_bucket,"trigger_time")];	
+					if(trigger_time){	
+					char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER,trigger_time);
+					jnx_file_write(resultspath,decoded_output,output);
+					free(resultspath);
+					remove_mysql_result_bucket(&trigger_bucket);
+					}
+				}
 			}
 			printf("decoded_output length %zu\n",output);
 			free(decoded_output);	

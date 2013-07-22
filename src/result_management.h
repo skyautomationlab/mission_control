@@ -17,8 +17,8 @@
  */
 #ifndef __RESULT_MANAGEMENT_H__
 #define __RESULT_MANAGEMENT_H__
-
-char *result_management_full_path_create(char *jobid, char *filename);
+#include <time.h>
+char *result_management_full_path_create(char *jobid, char *filename,time_t trigger_time);
 
 #endif
 

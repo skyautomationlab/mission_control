@@ -20,6 +20,7 @@
 #include "results_bucket.h"
 #include <jnxc_headers/jnxhash.h>
 
+#define GET_JOB_TRIGGER_TIME "USE AUTOMATION; select trigger_time from jobs where id=%d;"
 #define GET_CANDIDATE_JOBS "USE AUTOMATION; call get_candidate_jobs();"
 #define GET_MACHINE_FROM_ID "USE AUTOMATION; select * from machines where id=%d;"
 #define SET_JOB_STATUS "USE AUTOMATION; call set_job_status_from_id('%s','%s');"
