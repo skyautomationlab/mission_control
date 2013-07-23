@@ -61,10 +61,9 @@ int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char 
 void *transciever_control_endpoint_worker(void *arg)
 {
 	char *query = (char*)arg;
-	printf("Raw query %s\n",query);
 	jnx_term_printf_in_color(JNX_COL_RED,"raw length %d\n",strlen(query));
 	api_command_obj *obj = transaction_api_create_obj(query);
-	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
+	//jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
 
 	switch(obj->CMD)
 	{
@@ -75,14 +74,23 @@ void *transciever_control_endpoint_worker(void *arg)
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
 			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
-			
-			printf("decoded %s\n",decoded_output);
+	//		printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
-				char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER);
-
-				jnx_file_write(resultspath,decoded_output,output);
-				free(resultspath);
+				/*  get job trigger_time */
+				mysql_result_bucket *trigger_bucket = NULL;
+				printf("JOB ID %s\n",obj->ID);
+				if(sql_send_query(&trigger_bucket,GET_JOB_TRIGGER_TIME,obj->ID) == 0)
+				{
+					int trigger_time = atoi(trigger_bucket->rows[0][get_mysql_result_bucket_field_position(&trigger_bucket,"trigger_time")]);	
+					if(trigger_time){
+					printf("TRIGGER TIME ---> %d\n",trigger_time);	
+					char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER,trigger_time);
+					jnx_file_write(resultspath,decoded_output,output);
+					free(resultspath);
+					remove_mysql_result_bucket(&trigger_bucket);
+					}
+				}
 			}
 			printf("decoded_output length %zu\n",output);
 			free(decoded_output);	

@@ -78,22 +78,22 @@ int job_directory(char *job_id)
 		return 0;
 	}
 }
-int timestamp_directory_create(char *job_id, time_t current_time)
+int timestamp_directory_create(char *job_id, int  current_time)
 {
 	printf("Creating timestamp directory\n");
 	char *directory = jnx_hash_get(config,"RESULTDIR");
 	char str[256];
-	sprintf(str,"%s/%s/%d",directory,job_id,(int)current_time);
+	sprintf(str,"%s/%s/%d",directory,job_id,current_time);
 	return mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
 }
-int timestamp_directory(char *job_id, time_t current_time)
+int timestamp_directory(char *job_id, int current_time)
 {
 	char *directory = jnx_hash_get(config,"RESULTDIR");
 
 	if(directory)
 	{
 		char str[256];
-		sprintf(str,"%s/%s/%d",directory,job_id,(int)current_time);
+		sprintf(str,"%s/%s/%d",directory,job_id,current_time);
 		struct stat s;
 		int err = stat(str,&s);
 		if( err = -1)
@@ -108,7 +108,7 @@ int timestamp_directory(char *job_id, time_t current_time)
 		return 0;
 	}
 }
-char *result_management_full_path_create(char *jobid, char *filename)
+char *result_management_full_path_create(char *jobid, char *filename,int trigger_time)
 {
 	if(!result_directory())
 	{
@@ -126,16 +126,15 @@ char *result_management_full_path_create(char *jobid, char *filename)
 			exit(1);
 		}
 	}
-	time_t current_time = time(NULL);
-    	if(!timestamp_directory(jobid,current_time))
+    	if(!timestamp_directory(jobid,trigger_time))
 	{
-		if(timestamp_directory_create(jobid,current_time) != 0)
+		if(timestamp_directory_create(jobid,trigger_time) != 0)
 		{
 			perror("result_management_full_path_create");
 		}
 	}
 	char *buffer = malloc(sizeof(char) * 1024);
 	char *directory = jnx_hash_get(config,"RESULTDIR");
-	sprintf(buffer,"%s/%s/%d/%s",directory,jobid,(int)current_time,filename);
+	sprintf(buffer,"%s/%s/%d/%s",directory,jobid,trigger_time,filename);
 	return buffer;
 }
