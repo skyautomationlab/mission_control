@@ -75,7 +75,6 @@ void *transciever_control_endpoint_worker(void *arg)
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
 			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
-			
 			printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{

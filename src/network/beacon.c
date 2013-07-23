@@ -28,7 +28,7 @@
 #include "beacon.h"
 #define BPORT 12345
 #define BGROUP "225.0.0.37"
-#define WAIT_PERIOD 30
+#define WAIT_PERIOD 14
 #ifdef __APPLE__
 #define INTERFACE "en0"
 #else
