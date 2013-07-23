@@ -78,22 +78,22 @@ int job_directory(char *job_id)
 		return 0;
 	}
 }
-int timestamp_directory_create(char *job_id, time_t current_time)
+int timestamp_directory_create(char *job_id, int  current_time)
 {
 	printf("Creating timestamp directory\n");
 	char *directory = jnx_hash_get(config,"RESULTDIR");
 	char str[256];
-	sprintf(str,"%s/%s/%d",directory,job_id,(int)current_time);
+	sprintf(str,"%s/%s/%d",directory,job_id,current_time);
 	return mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
 }
-int timestamp_directory(char *job_id, time_t current_time)
+int timestamp_directory(char *job_id, int current_time)
 {
 	char *directory = jnx_hash_get(config,"RESULTDIR");
 
 	if(directory)
 	{
 		char str[256];
-		sprintf(str,"%s/%s/%d",directory,job_id,(int)current_time);
+		sprintf(str,"%s/%s/%d",directory,job_id,current_time);
 		struct stat s;
 		int err = stat(str,&s);
 		if( err = -1)
@@ -108,7 +108,7 @@ int timestamp_directory(char *job_id, time_t current_time)
 		return 0;
 	}
 }
-char *result_management_full_path_create(char *jobid, char *filename,time_t trigger_time)
+char *result_management_full_path_create(char *jobid, char *filename,int trigger_time)
 {
 	if(!result_directory())
 	{
@@ -135,6 +135,6 @@ char *result_management_full_path_create(char *jobid, char *filename,time_t trig
 	}
 	char *buffer = malloc(sizeof(char) * 1024);
 	char *directory = jnx_hash_get(config,"RESULTDIR");
-	sprintf(buffer,"%s/%s/%d/%s",directory,jobid,(int)trigger_time,filename);
+	sprintf(buffer,"%s/%s/%d/%s",directory,jobid,trigger_time,filename);
 	return buffer;
 }
