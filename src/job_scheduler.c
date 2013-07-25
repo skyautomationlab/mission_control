@@ -73,6 +73,10 @@ void job_scheduler_loop()
 						/*-----------------------------------------------------------------------------
 						 *  Check whether the job has already been queued, if not - continue
 						 *-----------------------------------------------------------------------------*/
+						if(strcmp(job_status,"QUEUED") == 0)
+						{
+							printf("Job %s is queued but has not been rescheduled to run\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")]);
+						}
 						if(strcmp(job_status,"NOT STARTED") == 0)
 						{
 							mysql_result_bucket *send_bucket = NULL;
