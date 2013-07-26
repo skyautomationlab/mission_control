@@ -24,7 +24,6 @@
 #include "job_scheduler.h"
 #include "database/sql_interface_layer.h"
 #define TIME_WAIT sleep(1);
-
 /*-----------------------------------------------------------------------------
  *  
  * Job states
@@ -120,7 +119,6 @@ void job_scheduler_loop()
 						}
 						break;
 					case NOTREADYTORUN:
-						printf("%s has status of NOT READY TO RUN %lds\n",jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"name")],difference);
 						break;
 				}	
 			}
