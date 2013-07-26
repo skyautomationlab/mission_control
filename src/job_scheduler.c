@@ -79,12 +79,6 @@ void job_scheduler_loop()
 						}
 						if(strcmp(job_status,"NOT STARTED") == 0)
 						{
-							mysql_result_bucket *send_bucket = NULL;
-							/*-----------------------------------------------------------------------------
-							 *  Set the machine status to queued
-							 *-----------------------------------------------------------------------------*/
-							if(sql_send_query(&send_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"QUEUED") == 0)
-							{
 								mysql_result_bucket *machine_ip_bucket = NULL;	
 								char *machine_ip = NULL;
 								char *machine_port = NULL;
@@ -95,13 +89,10 @@ void job_scheduler_loop()
 								{
 									machine_ip = machine_ip_bucket->rows[0][get_mysql_result_bucket_field_position(&machine_ip_bucket,"ip_address")];
 									machine_port = machine_ip_bucket->rows[0][get_mysql_result_bucket_field_position(&machine_ip_bucket,"port")];
+									assert(machine_ip != NULL);
+									assert(machine_port != NULL);
 								}
 								remove_mysql_result_bucket(&machine_ip_bucket);
-								if(machine_ip == NULL || machine_port == NULL)
-								{
-									jnx_term_printf_in_color(JNX_COL_RED,"Error resolving machine_ip and port\n");
-									exit(1);
-								}
 								/*-----------------------------------------------------------------------------
 								 *  Send our components to transceiver control and start a dialogue 
 								 *-----------------------------------------------------------------------------*/
@@ -112,20 +103,24 @@ void job_scheduler_loop()
 									 *  Send failure status to sql
 									 *-----------------------------------------------------------------------------*/
 									mysql_result_bucket *failure_bucket = NULL;
-									if(sql_send_query(&failure_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"FAILED") == 0)
-									{
-										free(failure_bucket);
-									}else
+									if(sql_send_query(&failure_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"FAILED") != 0)
 									{
 										jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
 									}
-
-									/*-----------------------------------------------------------------------------
-									 *  The node will tell us when the job is progressing, not the other way around!
-									 *-----------------------------------------------------------------------------*/
+									remove_mysql_result_bucket(&failure_bucket);
 								}
-							}
-							free(send_bucket);
+								else
+								{
+									mysql_result_bucket *send_bucket = NULL;
+									/*-----------------------------------------------------------------------------
+									 *  Set the machine status to queued
+									 *-----------------------------------------------------------------------------*/
+									if(sql_send_query(&send_bucket,SET_JOB_STATUS,jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"id")],"QUEUED") != 0)
+									{
+										jnx_term_printf_in_color(JNX_COL_RED,"Error setting job to queued\n");
+									}
+									remove_mysql_result_bucket(&send_bucket);
+								}
 						}
 						break;
 					case NOTREADYTORUN:
