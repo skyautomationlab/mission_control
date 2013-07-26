@@ -29,7 +29,7 @@
  * Job states
  *
  *  'NOT STARTED' -> 'QUEUED' -> 'IN PROGRESS' -> 'COMPLETED' 
- *
+ *          [ SEND MESSAGE ]        [ SATELLITE RESPOND ]      
  *-----------------------------------------------------------------------------*/
 typedef enum trigger_status { ALREADYRUN,READYTORUN,NOTREADYTORUN }trigger_status;
 int job_scheduler_check_time(time_t candidate_time, long *difference)
