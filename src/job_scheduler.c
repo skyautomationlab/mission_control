@@ -74,12 +74,12 @@ void job_scheduler_loop()
 						 *-----------------------------------------------------------------------------*/
 						if(strcmp(job_status,"NOT STARTED") == 0)
 						{
-							mysql_result_bucket *machine_ip_bucket = NULL;	
 							char *machine_ip = NULL;
 							char *machine_port = NULL;
 							/*-----------------------------------------------------------------------------
 							 *  Get machine_id
 							 *-----------------------------------------------------------------------------*/
+							mysql_result_bucket *machine_ip_bucket = NULL;	
 							if(sql_send_query(&machine_ip_bucket,GET_MACHINE_FROM_ID,atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"machine_id")])) == 0)
 							{
 								machine_ip = machine_ip_bucket->rows[0][get_mysql_result_bucket_field_position(&machine_ip_bucket,"ip_address")];
@@ -102,7 +102,7 @@ void job_scheduler_loop()
 								{
 									jnx_term_printf_in_color(JNX_COL_RED,"Error updating job status via sql_send_query\n");
 								}
-								remove_mysql_result_bucket(&failure_bucket);
+								free(failure_bucket);
 							}
 							else
 							{
