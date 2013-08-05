@@ -131,7 +131,8 @@ void job_scheduler_loop()
 void job_scheduler_start()
 {
 	printf("Job scheduler starting\n");
-	if(sql_setup_credentials() == 0){
+	if(sql_setup_credentials() == 0)
+	{
 		job_scheduler_loop();
 	}
 }

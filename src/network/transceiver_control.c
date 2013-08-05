@@ -48,7 +48,6 @@ int transceiver_control_query(char *hostaddr, char *hostport, const char *templa
 	{
 		return 1;
 	}
-
 }
 int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char *job_id, char *job_command)
 {
@@ -61,10 +60,10 @@ int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char 
 void *transciever_control_endpoint_worker(void *arg)
 {
 	char *query = (char*)arg;
-	jnx_term_printf_in_color(JNX_COL_RED,"raw length %d\n",strlen(query));
 	api_command_obj *obj = transaction_api_create_obj(query);
-	//jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
-
+#ifdef DEBUG
+	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
+#endif
 	switch(obj->CMD)
 	{
 		case JOB:
@@ -74,21 +73,19 @@ void *transciever_control_endpoint_worker(void *arg)
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
 			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
-	//		printf("decoded %s\n",decoded_output);
 			if(obj->OTHER)
 			{
-				/*  get job trigger_time */
 				mysql_result_bucket *trigger_bucket = NULL;
 				printf("JOB ID %s\n",obj->ID);
 				if(sql_send_query(&trigger_bucket,GET_JOB_TRIGGER_TIME,obj->ID) == 0)
 				{
 					int trigger_time = atoi(trigger_bucket->rows[0][get_mysql_result_bucket_field_position(&trigger_bucket,"trigger_time")]);	
 					if(trigger_time){
-					printf("TRIGGER TIME ---> %d\n",trigger_time);	
-					char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER,trigger_time);
-					jnx_file_write(resultspath,decoded_output,output);
-					free(resultspath);
-					remove_mysql_result_bucket(&trigger_bucket);
+						printf("TRIGGER TIME ---> %d\n",trigger_time);	
+						char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER,trigger_time);
+						jnx_file_write(resultspath,decoded_output,output);
+						free(resultspath);
+						remove_mysql_result_bucket(&trigger_bucket);
 					}
 				}
 			}
@@ -111,14 +108,11 @@ void *transciever_control_endpoint_worker(void *arg)
 				}
 			}	
 			break;
-
 		case ALIVE:
-		
 			if(sql_send_query(NULL,SET_MACHINE_STATUS,obj->DATA,obj->SENDER) != 0)
 			{
-					printf("sql_send_query error updating machine status for machine %s\n",obj->SENDER);
+				printf("sql_send_query error updating machine status for machine %s\n",obj->SENDER);
 			}
-					
 			break;
 		case UNKNOWN:
 			printf("transciever_control_endpoint_worker : Unknown API command %d\n",obj->CMD);	
@@ -132,7 +126,9 @@ void *transciever_control_endpoint_worker(void *arg)
 }
 void transceiver_control_listener_endpoint(char *incoming_query,size_t query_len, char *incoming_ip)
 {
+#ifdef DEBUG
 	printf("transceiver_control_listener_endpoint receieved message from  %s\n",incoming_ip);
+#endif
 	pthread_t worker_thread;
 	pthread_create(&worker_thread,NULL,transciever_control_endpoint_worker,incoming_query);
 }
