@@ -60,7 +60,15 @@ void job_scheduler_loop()
 			int x;
 			for(x = 0; x < jobbucket->row_count; ++x)
 			{
+				int pos = get_mysql_result_bucket_field_position(&jobbucket,"trigger_time");
+				if(pos == -1)
+				{
+					jnx_term_printf_in_color(JNX_COL_RED,"An error occured getting the trigger time\n");
+					continue;
+				}
 				time_t job_trigger = atoi(jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"trigger_time")]);
+			
+				
 				long difference;
 				trigger_status status = job_scheduler_check_time(job_trigger,&difference);
 				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];
