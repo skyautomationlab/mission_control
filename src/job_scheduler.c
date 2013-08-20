@@ -23,6 +23,7 @@
 #include "network/transceiver_control.h"
 #include "job_scheduler.h"
 #include "database/sql_interface_layer.h"
+#include "utils/terminal.h"
 #define TIME_WAIT sleep(1);
 /*-----------------------------------------------------------------------------
  *  
@@ -57,6 +58,12 @@ void job_scheduler_loop()
 		mysql_result_bucket *jobbucket = NULL;
 		if(sql_send_query(&jobbucket,GET_CANDIDATE_JOBS) == 0)
 		{
+			
+			/*-----------------------------------------------------------------------------
+			 *  Print out our jobs table
+			 *-----------------------------------------------------------------------------*/
+			terminal_print(jobbucket);
+		
 			int x;
 			for(x = 0; x < jobbucket->row_count; ++x)
 			{
@@ -67,7 +74,7 @@ void job_scheduler_loop()
 					continue;
 				}
 				time_t job_trigger = atoi(jobbucket->rows[x][pos]);
-			
+
 				long difference;
 				trigger_status status = job_scheduler_check_time(job_trigger,&difference);
 				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];

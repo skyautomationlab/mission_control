@@ -33,8 +33,6 @@
 extern jnx_hashmap *config;
 int transceiver_control_query(char *hostaddr, char *hostport, const char *template, ...)
 {
-	printf("host addr %s\n",hostaddr);
-	printf("Host port %s\n",hostport);
 	char query[2048];
 	va_list ap;
 	va_start(ap,template);
@@ -64,24 +62,23 @@ void *transciever_control_endpoint_worker(void *arg)
 #ifdef DEBUG
 	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
 #endif
+	
+	mysql_result_bucket *statusbucket = NULL;
+	size_t output;
+	char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
 	switch(obj->CMD)
 	{
 		case JOB:
 			printf("transceiver_control_listener_endpoint_worker : Not expecting to be sent JOB from an open node dialogue\n");
 			break;
 		case RESULT:
-			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
-			size_t output;
-			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
 			if(obj->OTHER)
 			{
 				mysql_result_bucket *trigger_bucket = NULL;
-				printf("JOB ID %s\n",obj->ID);
 				if(sql_send_query(&trigger_bucket,GET_JOB_TRIGGER_TIME,obj->ID) == 0)
 				{
 					int trigger_time = atoi(trigger_bucket->rows[0][get_mysql_result_bucket_field_position(&trigger_bucket,"trigger_time")]);	
 					if(trigger_time){
-						printf("TRIGGER TIME ---> %d\n",trigger_time);	
 						char *resultspath = result_management_full_path_create(obj->ID,obj->OTHER,trigger_time);
 						jnx_file_write(resultspath,decoded_output,output);
 						free(resultspath);
@@ -89,12 +86,10 @@ void *transciever_control_endpoint_worker(void *arg)
 					}
 				}
 			}
-			printf("decoded_output length %zu\n",output);
 			free(decoded_output);	
 			break;
 		case STATUS:
-			printf("transciever_control_endpoint_worker : Writing status update\n");
-			mysql_result_bucket *statusbucket = NULL;
+			//printf("transciever_control_endpoint_worker : Writing status update\n");
 			if(sql_send_query(&statusbucket,SET_JOB_STATUS,obj->ID,obj->DATA) != 0)
 			{
 				printf("sql_send_query updating job status via transceiver_control_listener_endpoint_worker for job %s\n",obj->ID);

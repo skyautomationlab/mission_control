@@ -35,7 +35,7 @@ int sql_query(char* query,mysql_result_bucket **result_bucket)
 		if(result)
 		{
 			add_mysql_result_bucket_entry(result_bucket,result);
-		//	mysql_free_result(result);
+			//	mysql_free_result(result);
 		}
 		else          /* no result set or error */
 		{
