@@ -30,6 +30,7 @@
 #include "transceiver_control.h"
 #include "transaction_api.h"
 #define MAX_CONNECTIONS 24
+#define DEBUG
 extern jnx_hashmap *config;
 int transceiver_control_query(char *hostaddr, char *hostport, const char *template, ...)
 {

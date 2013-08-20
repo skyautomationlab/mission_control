@@ -27,7 +27,7 @@ void terminal_print(mysql_result_bucket *jobbucket)
 	int y;
 	for(y = 0; y < jobbucket->row_count; ++y)
 	{
-	printf("%-20s\t%-20s\t\t%-20s\t%-25s", jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"id")], jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"status")], jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"TIMESTAMP")],jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"machine_id")]);
+	printf("%-20s\t%-20s\t\t%-20s\t%-40s", jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"id")], jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"status")], jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"TIMESTAMP")],jobbucket->rows[y][get_mysql_result_bucket_field_position(&jobbucket,"machine_id")]);
 	printf("\n");
 	}
 	printf("===========================================================================================\n");
