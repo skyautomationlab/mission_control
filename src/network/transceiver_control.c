@@ -61,15 +61,15 @@ void *transciever_control_endpoint_worker(void *arg)
 {
 	char *query = (char*)arg;
 	api_command_obj *obj = transaction_api_create_obj(query);
-#ifdef DEBUG
-	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
-#endif
 	switch(obj->CMD)
 	{
 		case JOB:
 			printf("transceiver_control_listener_endpoint_worker : Not expecting to be sent JOB from an open node dialogue\n");
 			break;
 		case RESULT:
+#ifdef DEBUG
+	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
+#endif
 			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
 			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		

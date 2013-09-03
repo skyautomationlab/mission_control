@@ -66,8 +66,13 @@ void job_scheduler_loop()
 					jnx_term_printf_in_color(JNX_COL_RED,"An error occured getting the trigger time\n");
 					continue;
 				}
-				time_t job_trigger = atoi(jobbucket->rows[x][pos]);
-			
+				char *job_raw = jobbucket->rows[x][pos];
+				if(!job_raw)
+				{
+					jnx_term_printf_in_color(JNX_COL_RED,"An error occured getting the trigger time\n");
+					continue;
+				}
+				time_t job_trigger = atoi(job_raw);
 				long difference;
 				trigger_status status = job_scheduler_check_time(job_trigger,&difference);
 				char *job_status = jobbucket->rows[x][get_mysql_result_bucket_field_position(&jobbucket,"status")];
