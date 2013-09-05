@@ -24,7 +24,6 @@
 #include <stdio.h>
 int sql_setup_credentials(void)
 {
-
 	char *host = jnx_hash_get(config,"SQLHOST");	
 	printf("host %s\n",host);
 	char *username = jnx_hash_get(config,"SQLUSER");

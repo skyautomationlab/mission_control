@@ -47,7 +47,6 @@ void *beacon_loop(void*ar)
 	while(1)
 	{
 		sleep(WAIT_PERIOD);
-		//set machines offline for challenge
 		mysql_result_bucket *res_bucket = NULL;
 		sql_send_query(&res_bucket,SET_ALL_MACHINES_OFFLINE);
 		beacon_send();

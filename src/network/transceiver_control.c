@@ -60,6 +60,12 @@ int transceiver_control_start_dialogue(char *machine_ip,char *machine_port,char 
 void *transciever_control_endpoint_worker(void *arg)
 {
 	char *query = (char*)arg;
+	if(strlen(query) <= 0)
+	{
+		jnx_term_printf_in_color(JNX_COL_RED,"Query length is 0\n");
+		return NULL;
+	}
+	
 	api_command_obj *obj = transaction_api_create_obj(query);
 	switch(obj->CMD)
 	{
@@ -67,10 +73,9 @@ void *transciever_control_endpoint_worker(void *arg)
 			printf("transceiver_control_listener_endpoint_worker : Not expecting to be sent JOB from an open node dialogue\n");
 			break;
 		case RESULT:
-#ifdef DEBUG
 	jnx_term_printf_in_color(JNX_COL_BLUE,"IN : CMD:%d ID:%s DATA:%s OTHER:%s SENDER:%s PORT:%d\n",obj->CMD,obj->ID,obj->DATA,obj->OTHER,obj->SENDER,obj->PORT);
-#endif
-			jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
+			
+	jnx_term_printf_in_color(JNX_COL_GREEN,"Got result\n");
 			size_t output;
 			char *decoded_output = base64_decode(obj->DATA,strlen(obj->DATA),&output);		
 			if(obj->OTHER)
@@ -113,6 +118,10 @@ void *transciever_control_endpoint_worker(void *arg)
 			{
 				printf("sql_send_query error updating machine status for machine %s\n",obj->SENDER);
 			}
+			break;
+		case KILL:
+				printf("sending kill command %s %s\n",obj->DATA,obj->OTHER);
+				transceiver_control_query(obj->DATA,obj->OTHER,API_COMMAND,"KILL",obj->ID,"",/* Other field is left empty */ "",(char*)jnx_hash_get(config,"MISSIONCONTROLIP"),(char*)jnx_hash_get(config,"MISSIONCONTROLPORT"));
 			break;
 		case UNKNOWN:
 			printf("transciever_control_endpoint_worker : Unknown API command %d\n",obj->CMD);	
